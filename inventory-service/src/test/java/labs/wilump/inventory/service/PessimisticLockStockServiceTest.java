@@ -1,6 +1,5 @@
 package labs.wilump.inventory.service;
 
-
 import labs.wilump.inventory.domain.Stock;
 import labs.wilump.inventory.repository.StockRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -15,16 +14,16 @@ import java.util.concurrent.Executors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-public class SynchronizedStockServiceTest {
+public class PessimisticLockStockServiceTest {
 
     @Autowired
-    private SynchronizedStockService stockService;
+    private PessimisticLockStockService stockService;
 
     @Autowired
     private StockRepository stockRepository;
 
     @Test
-    public void 동시에_100명_주문_with_synchronized() throws InterruptedException {
+    public void 동시에_100명_주문_with_Pessimistic_Lock() throws InterruptedException {
         // given
         int threadCount = 100;
         ExecutorService executorService = Executors.newFixedThreadPool(20);

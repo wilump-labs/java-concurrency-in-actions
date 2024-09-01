@@ -1,19 +1,49 @@
+#spring:
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
+#    database-platform: org.hibernate.dialect.H2Dialect
+#    database: h2
+#  flyway:
+#    enabled: true
+#  datasource:
+#    url: jdbc:h2:mem:testdb;MODE=MySQL;LOCK_TIMEOUT=5000
+#    driverClassName: org.h2.Driver
+#    username: sa
+#    password:
+#  data:
+#    redis:
+#      host: 'localhost'
+#      port: 16379
+#      database: 0
+
+
 spring:
   jpa:
     hibernate:
       ddl-auto: create
-    database-platform: org.hibernate.dialect.H2Dialect
-    database: h2
+    show-sql: true
   flyway:
     enabled: true
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MySQL
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:13306}/${DB_NAME:inventory}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:12345678}
+    hikari:
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:30}
   data:
     redis:
-      host: 'localhost'
-      port: 16379
-      database: 0
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:16379}
+      database: ${REDIS_DATABASE:0}
 
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
