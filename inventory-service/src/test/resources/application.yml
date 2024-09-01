@@ -47,3 +47,5 @@ logging:
           descriptor:
             sql:
               BasicBinder: TRACE
+    org.springframework.data.redis.*: TRACE
+    org.springframework.cache.*: TRACE

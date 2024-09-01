@@ -1,7 +1,7 @@
 package labs.wilump.inventory.repository;
 
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -12,7 +12,7 @@ import static java.util.Objects.isNull;
  * Lock 사용을 할 경우 datasource 분리해서 사용
  * - connection pool 점유하는 것을 방지
  */
-@Repository
+@Component
 public class LockRepository {
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;

@@ -1,6 +1,16 @@
 # 재고시스템 예제를 통한 동시성 제어
 
-## Synchronized
+- `synchronized` 키워드
+- MySQL을 활용한 동시성 제어
+  - Pessimistic Lock(비관적 락)
+  - Optimistic Lock(낙관적 락)
+  - Named Lock(네임드 락)
+- Redis를 활용한 동시성 제어
+  - Lettuce를 이용한 분산 락
+  - Redission을 이용한 분산 락
+
+
+## 1. Synchronized
 - `synchronized` 키워드를 사용하여 동시성 제어를 할 수 있음
   - cf. `service/SynchronizedInventoryService.java`
 
@@ -39,7 +49,7 @@
 <br>
 <br>
 
-## MySQL을 활용한 동시성 제어
+## 2. MySQL을 활용한 동시성 제어
 ### Pessimistic Lock(비관적 락)
 - 실제로 데이터에 lock을 걸어서 정합성을 맞추는 방법
 - `exclusive lock`(배타 락)을 걸게 되며 다른 트랜잭션에서는 lock이 해제되기 전에 데이터를 가져갈 수 없음
@@ -202,3 +212,90 @@ public class NamedLockStockFacade {
 #### 참고
 - [MySQL - Locking Functions](https://dev.mysql.com/doc/refman/8.0/en/locking-functions.html)
 - [MySQL - Metadata Locking](https://dev.mysql.com/doc/refman/8.0/en/metadata-locking.html)
+
+<br><br>
+
+## 3. Redis를 활용한 동시성 제어
+
+### Lettuce를 이용한 분산 락
+- `setnx`를 이용하여 lock을 획득하고 `del`을 이용하여 lock을 해제 (`spin lock` 방식)
+  - `spin lock`: 다른 스레드가 lock을 소유하고 있다면 그 lock이 반환될 때까지 계속 확인하며 기다림
+  - `spin lock` 방식은 동시에 많은 스레드가 lock 획득 대기 상태일 때 redis에 부하를 줄 수 있음 (polling)
+- lock 획득 재시도는 직접 구현해야 함
+- 별도의 라이브러리 추가할 필요 없이 `spring-data-redis`를 이용하여 구현 가능
+  - default로 `Lettuce`를 사용
+
+#### 사용 방법
+```java
+public class RedisLockRepository {
+
+    private final RedisTemplate<String, String> redisTemplate;
+
+    public RedisLockRepository(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    public Boolean lock(Long key) {
+        return redisTemplate
+                .opsForValue()
+                .setIfAbsent(generateKey(key), "lock", Duration.ofMillis(3000));
+    }
+
+    public Boolean unlock(Long key) {
+        return redisTemplate.delete(generateKey(key));
+    }
+
+    private String generateKey(Long key) {
+        return key.toString();
+    }
+}
+```
+
+<br>
+
+### Redission을 이용한 분산 락
+- pub-sub 기반으로 lock을 획득하고 해제
+  - lettuce와 비교했을 때 redis에 부하를 덜 줄 수 있음
+- lock 획득 재시도를 기본으로 제공
+- 라이브러리 추가로 필요
+
+#### 사용 방법
+`RedissonClient` 활용
+```java
+public class RedissonLockStockFacade {
+
+    private final RedissonClient redissonClient;
+
+    private final StockService stockService;
+
+    public RedissonLockStockFacade(RedissonClient redissonClient, StockService stockService) {
+        this.redissonClient = redissonClient;
+        this.stockService = stockService;
+    }
+
+    public void decrease(Long key, Long quantity) {
+        RLock lock = redissonClient.getLock(key.toString());
+
+        try {
+            boolean available = lock.tryLock(10, 1, TimeUnit.SECONDS);
+
+            if (!available) {
+                System.out.println("lock 획득 실패");
+                return;
+            }
+
+            stockService.decrease(key, quantity);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+```
+
+<br>
+
+### 상황에 따른 사용 방법
+- 재시도가 필요하지 않은 lock이라면 `Lettuce`를 이용하여 구현
+- 재시도가 필요한 lock이라면 `Redission`을 이용하여 구현
