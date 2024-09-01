@@ -1,0 +1,13 @@
+pluginManagement {
+    plugins {
+        id 'org.springframework.boot' version "${springBootVersion}"
+        id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+    }
+}
+
+rootProject.name = 'java-concurrency'
+
+include 'inventory-service'
+include 'thread'
+include 'virtual-thread'
+include 'support'
