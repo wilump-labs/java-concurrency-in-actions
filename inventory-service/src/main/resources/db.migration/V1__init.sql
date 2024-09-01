@@ -1,0 +1,6 @@
+CREATE TABLE stock (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_id BIGINT NOT NULL,
+    quantity BIGINT NOT NULL,
+    version BIGINT NOT NULL,
+);
