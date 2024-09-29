@@ -1,5 +1,4 @@
 dependencies {
-    implementation project(":support")
-
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation(testFixtures(project(':support:benchmark')))
 }

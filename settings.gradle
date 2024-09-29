@@ -7,7 +7,9 @@ pluginManagement {
 
 rootProject.name = 'java-concurrency'
 
+include 'coroutine'
 include 'inventory-service'
 include 'thread'
 include 'virtual-thread'
 include 'support'
+include 'support:benchmark'
