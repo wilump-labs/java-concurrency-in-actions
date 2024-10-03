@@ -3,5 +3,8 @@ apply plugin: 'java-test-fixtures'
 dependencies {
     api "org.openjdk.jmh:jmh-core:${property("jmhVersion")}"
     api "org.openjdk.jmh:jmh-generator-annprocess:${property("jmhVersion")}"
+    // for kotlin
+    api "org.openjdk.jmh:jmh-kotlin-benchmark-archetype:${property("jmhVersion")}"
+
     api 'org.springframework.boot:spring-boot-starter-test'
 }
